@@ -1,0 +1,106 @@
+# AI Vehicle Monitoring & Crime Detection System - Docker Compose
+# Government of Ghana - Ministry of Local Government and Rural Development
+# CLASSIFICATION: RESTRICTED - FOR OFFICIAL USE ONLY
+#
+# SECURITY NOTICE:
+# This configuration is for government use only and contains sensitive system parameters.
+# Ensure all containers run on secured government networks with appropriate monitoring.
+
+version: '3.8'
+
+services:
+  # Main application - Ghana Vehicle Monitoring System
+  ghana-vehicle-monitoring-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://ghana_db_user:${DB_PASSWORD}@postgres:5432/ghana_vehicle_monitoring
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMADB_PATH=/app/data/chromadb
+      - FAISS_INDEX_PATH=/app/data/faiss_index
+      - GHANA_DATA_PROTECTION_COMPLIANCE=true
+      - AUDIT_LOG_RETENTION_DAYS=365
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - ai-vehicle-network
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ai_vehicle_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - ai-vehicle-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - ai-vehicle-network
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - ai-vehicle-network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+    restart: unless-stopped
+    networks:
+      - ai-vehicle-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  ai-vehicle-network:
+    driver: bridge

@@ -1,0 +1,291 @@
+# AI Vehicle Monitoring & Crime Detection System - Implementation Rules
+
+## Project Overview
+Build a hybrid RAG pipeline system for Ghana Local Government that combines vector similarity (FAISS) and rank-based filtering to monitor vehicles and detect potential criminal activities in real-time.
+
+## Core Architecture Requirements
+
+### 1. Technology Stack (Non-Negotiable)
+- **Backend**: Python 3.9+
+- **Vector Database**: FAISS for similarity search
+- **LLM Integration**: GPT-4 with custom prompting
+- **RAG Framework**: LangChain for orchestration
+- **Context Management**: Custom Model Context Protocol (MCP)
+- **API Framework**: FastAPI for service endpoints
+- **Containerization**: Docker with multi-stage builds
+- **Cloud Infrastructure**: AWS EC2 for deployment
+- **Database**: Lightweight vector DBs (ChromaDB or similar)
+
+### 2. System Components
+
+#### A. Hybrid RAG Pipeline
+```
+Input → Vector Similarity (FAISS) → Rank-Based Filtering → Context Assembly → LLM Processing → Output
+```
+
+**Rules:**
+- Vector similarity must use FAISS with cosine similarity
+- Implement both semantic and exact match retrieval
+- Rank-based filtering should prioritize recent incidents and high-risk vehicles
+- Support multiple data sources: registration logs, smuggling alerts, incident reports
+- Maintain retrieval relevance precision@k metrics
+
+#### B. Model Context Protocol (MCP) Integration
+**Requirements:**
+- Dynamic prompt shaping based on user role (officer, analyst, administrator)
+- Context management layer that controls information flow to LLM
+- Real-time context updates based on location, intent, and threat level
+- Structured input formatting for consistent LLM responses
+
+#### C. Data Processing Pipeline
+**Rules:**
+- Ingest vehicle registration data, incident logs, and alert systems
+- Implement data validation and sanitization
+- Support real-time streaming data ingestion
+- Maintain data lineage and audit trails
+- Store embeddings efficiently for fast retrieval
+
+### 3. Implementation Guidelines
+
+#### Phase 1: Core RAG System (Week 1-2)
+```python
+# Priority Tasks:
+1. Set up FAISS vector store with vehicle data embeddings
+2. Implement basic similarity search functionality  
+3. Create data ingestion pipeline for registration logs
+4. Build basic FastAPI endpoints for queries
+5. Set up Docker containerization
+```
+
+#### Phase 2: MCP Integration (Week 3-4)
+```python
+# Priority Tasks:
+1. Implement Model Context Protocol layer
+2. Add role-based prompt shaping
+3. Integrate real-time context management
+4. Add threat level assessment logic
+5. Implement structured response formatting
+```
+
+#### Phase 3: Advanced Features (Week 5-6)
+```python
+# Priority Tasks:
+1. Add rank-based filtering algorithms
+2. Implement custom evaluation benchmarks
+3. Add BLEU scoring for response quality
+4. Optimize performance for real-time queries
+5. Deploy to AWS EC2 with monitoring
+```
+
+### 4. Data Schema Requirements
+
+#### Vehicle Data Structure
+```json
+{
+  "vehicle_id": "string",
+  "registration_number": "string", 
+  "owner_details": "object",
+  "incident_history": "array",
+  "risk_score": "float",
+  "last_seen_location": "coordinates",
+  "alert_flags": "array",
+  "embedding_vector": "array[float]"
+}
+```
+
+#### Incident Log Structure
+```json
+{
+  "incident_id": "string",
+  "vehicle_involved": "string",
+  "incident_type": "enum",
+  "location": "coordinates", 
+  "timestamp": "datetime",
+  "severity_level": "integer",
+  "description": "string",
+  "status": "enum"
+}
+```
+
+### 5. MCP Implementation Rules
+
+#### Context Shaping Logic
+```python
+def shape_context(user_role, location, intent, threat_level):
+    """
+    Rules:
+    - Officers: Focus on immediate actionable intel
+    - Analysts: Provide detailed historical patterns  
+    - Administrators: Include system metrics and summaries
+    - High threat: Prioritize recent similar incidents
+    - Location-based: Include regional crime patterns
+    """
+```
+
+#### Information Flow Control
+- Implement security clearance levels
+- Filter sensitive information based on user permissions
+- Log all context access for audit purposes
+- Ensure real-time updates don't overwhelm the system
+
+### 6. Performance Requirements
+
+#### Response Time Targets
+- Vector similarity search: < 100ms
+- Full RAG pipeline: < 2 seconds  
+- Real-time context updates: < 500ms
+- System availability: 99.5% uptime
+
+#### Scalability Requirements
+- Support 1000+ concurrent users
+- Handle 10K+ vehicle records efficiently
+- Process 1K+ incident reports daily
+- Maintain sub-second query response times
+
+### 7. Evaluation Framework
+
+#### Custom Benchmark Requirements
+- Ground truth incident logs for testing
+- Precision@k metrics for retrieval relevance
+- BLEU scores for LLM response quality
+- Human-in-the-loop accuracy validation
+- Performance benchmarks for real-time processing
+
+#### Success Metrics
+```python
+evaluation_metrics = {
+    "retrieval_precision_at_5": "> 0.85",
+    "retrieval_precision_at_10": "> 0.75", 
+    "llm_response_bleu": "> 0.70",
+    "human_accuracy_rating": "> 4.0/5.0",
+    "system_response_time": "< 2000ms",
+    "false_positive_rate": "< 0.05"
+}
+```
+
+### 8. Security & Compliance
+
+#### Data Protection Rules
+- Encrypt all vehicle and personal data
+- Implement role-based access control (RBAC)
+- Maintain comprehensive audit logs
+- Follow Ghana data protection regulations
+- Secure API endpoints with authentication
+
+#### Monitoring & Alerting
+- Real-time system health monitoring
+- Alert fatigue prevention mechanisms
+- Performance metric dashboards
+- Error tracking and logging
+- Security incident detection
+
+### 9. Deployment Architecture
+
+#### AWS EC2 Setup
+```yaml
+Infrastructure:
+  - Load Balancer: Application Load Balancer
+  - Compute: EC2 instances (t3.large minimum)
+  - Storage: EBS volumes for vector data
+  - Networking: VPC with private subnets
+  - Monitoring: CloudWatch integration
+```
+
+#### Docker Configuration
+```dockerfile
+# Multi-stage build requirements:
+# Stage 1: Dependencies and model downloads
+# Stage 2: Application code and configs  
+# Stage 3: Production runtime with minimal footprint
+```
+
+### 10. Development Workflow
+
+#### Code Quality Standards
+- Type hints for all Python functions
+- Comprehensive unit test coverage (>80%)
+- Integration tests for RAG pipeline
+- Performance benchmarking for each feature
+- Code review requirements for all changes
+
+#### Documentation Requirements
+- API documentation with OpenAPI/Swagger
+- Architecture decision records (ADRs)
+- Deployment and maintenance guides
+- User manuals for different roles
+- Troubleshooting and FAQ sections
+
+### 11. Specific Implementation Notes
+
+#### FAISS Optimization
+- Use IVFPQ index for large-scale similarity search
+- Implement index sharding for horizontal scaling
+- Regular index rebuilding for data freshness
+- Memory mapping for efficient loading
+
+#### LangChain Integration
+- Custom retriever classes for vehicle data
+- Prompt templates for different user contexts
+- Chain composition for complex workflows
+- Memory management for conversation context
+
+#### Real-time Processing
+- Implement async processing where possible
+- Use connection pooling for database access
+- Cache frequently accessed data
+- Implement graceful degradation for high load
+
+### 12. Testing Strategy
+
+#### Test Categories
+1. **Unit Tests**: Individual component testing
+2. **Integration Tests**: RAG pipeline end-to-end
+3. **Performance Tests**: Load and stress testing  
+4. **Security Tests**: Penetration and vulnerability testing
+5. **User Acceptance Tests**: Role-based functionality testing
+
+#### Test Data Requirements
+- Synthetic vehicle registration data
+- Simulated incident reports and alerts
+- Test user accounts for different roles
+- Performance test datasets of various sizes
+
+### 13. Maintenance & Updates
+
+#### Regular Maintenance Tasks
+- Weekly vector index rebuilding
+- Monthly performance optimization reviews
+- Quarterly security audits
+- Bi-annual model retraining evaluations
+
+#### Update Procedures
+- Blue-green deployment for zero downtime
+- Database migration scripts and rollback plans
+- Model version management and A/B testing
+- Configuration management with version control
+
+## Success Criteria
+
+The project will be considered successful when:
+1. All core RAG functionality is implemented and tested
+2. MCP provides context-appropriate responses for all user roles
+3. System meets all performance benchmarks
+4. Evaluation metrics exceed minimum thresholds
+5. Successfully deployed on AWS with monitoring
+6. Complete documentation and training materials delivered
+
+## Risk Mitigation
+
+### Technical Risks
+- **Vector DB Performance**: Implement caching and index optimization
+- **LLM Rate Limits**: Build request queuing and fallback mechanisms  
+- **Data Quality Issues**: Implement robust validation and cleaning
+- **Integration Complexity**: Use modular architecture with clear interfaces
+
+### Operational Risks
+- **System Downtime**: Implement redundancy and failover mechanisms
+- **Data Privacy**: Encrypt sensitive data and implement access controls
+- **User Adoption**: Provide comprehensive training and user support
+- **Maintenance Overhead**: Automate routine tasks and monitoring
+
+This implementation should result in a robust, scalable AI system that effectively supports Ghana's local government vehicle monitoring and crime detection objectives.

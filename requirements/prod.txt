@@ -1,0 +1,13 @@
+# Production dependencies
+-r base.txt
+
+# Production server
+gunicorn==21.2.0
+
+# Monitoring and observability
+sentry-sdk[fastapi]==1.38.0
+datadog==0.48.0
+
+# Performance optimization
+redis==5.0.1
+celery==5.3.4
